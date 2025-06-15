@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LogSig from './logsign';
+import Dash from './dash';
 
-
-function App() {
-
-
+export default function App() {
   return (
-    <>
-      
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<LogSig />} />
+        <Route path="/dash" element={<Dash />} />
+      </Routes>
+    </Router>
+  );
 }
-
-export default App
