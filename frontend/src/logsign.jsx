@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Github, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Styles object (in a real app, this would be imported from a separate CSS file)
 const styles = {
   authContainer: {
     minHeight: '100vh',
+    width: '100vw',
     display: 'flex',
     fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
     backgroundColor: '#f5f7fa'
@@ -342,25 +344,52 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
-  
-  // Responsive styles
-  '@media (max-width: 768px)': {
+
+  '@media (max-width: 1024px)': {
     authContainer: {
       flexDirection: 'column'
     },
     authSidebar: {
-      padding: '40px 20px',
+      padding: '50px 30px',
       minHeight: '300px'
     },
     authFormContainer: {
-      padding: '40px 20px',
-      minWidth: 'auto'
+      padding: '50px 30px',
+      minWidth: 'auto',
+      width: '100%'
+    },
+    formTitle: {
+      fontSize: '30px'
+    },
+    authTitle: {
+      fontSize: '30px'
+    }
+  },
+
+  '@media (max-width: 768px)': {
+    authSidebar: {
+      padding: '40px 20px'
+    },
+    authFormContainer: {
+      padding: '40px 20px'
     },
     formTitle: {
       fontSize: '28px'
     },
     authTitle: {
       fontSize: '28px'
+    }
+  },
+
+  '@media (max-width: 480px)': {
+    authSidebarContent: {
+      maxWidth: '100%'
+    },
+    authForm: {
+      maxWidth: '100%'
+    },
+    formInput: {
+      paddingLeft: '40px'
     }
   }
 };
@@ -380,9 +409,11 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleSheet);
 }
 
+
 const AuthContainer = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState('');
@@ -440,19 +471,43 @@ const AuthContainer = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log('Form submitted:', formData);
-      // Handle successful login/signup here
-    }, 2000);
-  };
+  e.preventDefault();
+
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/auth/${isLogin ? 'login' : 'register'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        isLogin
+          ? { email: formData.email, password: formData.password }
+          : {
+              fullName: formData.fullName,
+              email: formData.email,
+              password: formData.password,
+              phone: formData.phone
+            }
+      )
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data);
+
+    localStorage.setItem('token', data.token);
+
+    // 🔁 Redirect to /dash/<token>
+    navigate(`/dash/${data.token}`);
+
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);

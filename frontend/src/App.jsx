@@ -7,7 +7,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LogSig />} />
-        <Route path="/dash" element={<Dash />} />
+        <Route path="/dash/:token" element={<Dash />} />
       </Routes>
     </Router>
   );

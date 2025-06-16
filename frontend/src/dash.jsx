@@ -1,473 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Users, UserPlus, Settings, Search, Phone, Video, MoreVertical, Smile, Paperclip, X, LogOut, User } from 'lucide-react';
+import { Send, Users, UserPlus, Settings, Search, Phone, Video, MoreVertical, Smile, Paperclip, X, LogOut, User, Menu } from 'lucide-react';
+import './dash.css';
+import { useParams } from 'react-router-dom';
 
-// Styles object (in a real app, this would be imported from a separate CSS file)
-const styles = {
-  chatApp: {
-    display: 'flex',
-    height: '100vh',
-    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-    backgroundColor: '#f5f7fa',
-    overflow: 'hidden'
-  },
-  
-  sidebar: {
-    width: '320px',
-    backgroundColor: '#2c3e50',
-    color: 'white',
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid #34495e'
-  },
-  
-  sidebarHeader: {
-    padding: '20px',
-    backgroundColor: '#34495e',
-    borderBottom: '1px solid #2c3e50',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  
-  userProfile: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  
-  avatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    backgroundColor: '#3498db',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold',
-    fontSize: '16px'
-  },
-  
-  statusIndicator: {
-    width: '12px',
-    height: '12px',
-    borderRadius: '50%',
-    backgroundColor: '#2ecc71',
-    border: '2px solid white',
-    position: 'absolute',
-    bottom: '0',
-    right: '0'
-  },
-  
-  searchBar: {
-    padding: '15px 20px',
-    borderBottom: '1px solid #34495e'
-  },
-  
-  searchInput: {
-    width: '100%',
-    padding: '10px 15px',
-    borderRadius: '20px',
-    border: 'none',
-    backgroundColor: '#34495e',
-    color: 'white',
-    outline: 'none',
-    fontSize: '14px'
-  },
-  
-  tabContainer: {
-    display: 'flex',
-    backgroundColor: '#34495e',
-    borderBottom: '1px solid #2c3e50'
-  },
-  
-  tab: {
-    flex: 1,
-    padding: '15px',
-    textAlign: 'center',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    transition: 'all 0.3s ease',
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#bdc3c7'
-  },
-  
-  activeTab: {
-    backgroundColor: '#2c3e50',
-    color: 'white',
-    borderBottom: '3px solid #3498db'
-  },
-  
-  chatList: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '10px 0'
-  },
-  
-  chatItem: {
-    padding: '15px 20px',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    borderBottom: '1px solid rgba(255,255,255,0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  
-  activeChatItem: {
-    backgroundColor: '#34495e'
-  },
-  
-  chatItemContent: {
-    flex: 1,
-    minWidth: 0
-  },
-  
-  chatName: {
-    fontWeight: '600',
-    fontSize: '14px',
-    marginBottom: '4px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  
-  lastMessage: {
-    fontSize: '12px',
-    color: '#bdc3c7',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  
-  chatMeta: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: '4px'
-  },
-  
-  timestamp: {
-    fontSize: '11px',
-    color: '#95a5a6'
-  },
-  
-  unreadBadge: {
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    borderRadius: '12px',
-    padding: '2px 8px',
-    fontSize: '11px',
-    fontWeight: 'bold',
-    minWidth: '20px',
-    textAlign: 'center'
-  },
-  
-  mainChat: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: 'white'
-  },
-  
-  chatHeader: {
-    padding: '20px',
-    backgroundColor: 'white',
-    borderBottom: '1px solid #ecf0f1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  },
-  
-  chatHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px'
-  },
-  
-  chatHeaderInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
-  },
-  
-  chatTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2c3e50',
-    margin: 0
-  },
-  
-  chatStatus: {
-    fontSize: '12px',
-    color: '#7f8c8d'
-  },
-  
-  chatActions: {
-    display: 'flex',
-    gap: '15px'
-  },
-  
-  actionButton: {
-    padding: '8px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    color: '#7f8c8d',
-    transition: 'all 0.3s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  
-  messagesContainer: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px',
-    backgroundColor: '#f8f9fa'
-  },
-  
-  message: {
-    marginBottom: '15px',
-    display: 'flex',
-    gap: '10px'
-  },
-  
-  ownMessage: {
-    flexDirection: 'row-reverse'
-  },
-  
-  messageAvatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    backgroundColor: '#3498db',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    color: 'white',
-    flexShrink: 0
-  },
-  
-  messageContent: {
-    maxWidth: '70%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px'
-  },
-  
-  messageBubble: {
-    padding: '12px 16px',
-    borderRadius: '18px',
-    backgroundColor: 'white',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-    fontSize: '14px',
-    lineHeight: '1.4',
-    wordWrap: 'break-word'
-  },
-  
-  ownMessageBubble: {
-    backgroundColor: '#3498db',
-    color: 'white'
-  },
-  
-  messageInfo: {
-    fontSize: '11px',
-    color: '#95a5a6',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px'
-  },
-  
-  typingIndicator: {
-    padding: '15px 20px',
-    backgroundColor: '#ecf0f1',
-    fontSize: '13px',
-    color: '#7f8c8d',
-    fontStyle: 'italic',
-    borderTop: '1px solid #d5dbdb'
-  },
-  
-  messageInput: {
-    padding: '20px',
-    backgroundColor: 'white',
-    borderTop: '1px solid #ecf0f1',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px'
-  },
-  
-  inputContainer: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '25px',
-    padding: '12px 20px',
-    gap: '10px'
-  },
-  
-  textInput: {
-    flex: 1,
-    border: 'none',
-    outline: 'none',
-    backgroundColor: 'transparent',
-    fontSize: '14px',
-    color: '#2c3e50',
-    resize: 'none',
-    minHeight: '20px',
-    maxHeight: '100px'
-  },
-  
-  sendButton: {
-    padding: '12px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: '#3498db',
-    color: 'white',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  
-  onlineUsers: {
-    padding: '20px',
-    backgroundColor: 'white'
-  },
-  
-  onlineUsersList: {
-    display: 'flex',
-    gap: '10px',
-    flexWrap: 'wrap'
-  },
-  
-  onlineUser: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 12px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '20px',
-    fontSize: '12px',
-    color: '#2c3e50'
-  },
-  
-  modal: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000
-  },
-  
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '30px',
-    maxWidth: '400px',
-    width: '90%',
-    maxHeight: '80vh',
-    overflowY: 'auto'
-  },
-  
-  modalHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '20px',
-    paddingBottom: '15px',
-    borderBottom: '1px solid #ecf0f1'
-  },
-  
-  modalTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2c3e50',
-    margin: 0
-  },
-  
-  closeButton: {
-    padding: '5px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    color: '#95a5a6',
-    borderRadius: '50%'
-  },
-  
-  formGroup: {
-    marginBottom: '20px'
-  },
-  
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  
-  input: {
-    width: '100%',
-    padding: '12px 15px',
-    border: '1px solid #d5dbdb',
-    borderRadius: '8px',
-    fontSize: '14px',
-    color: '#2c3e50',
-    outline: 'none',
-    transition: 'border-color 0.3s ease',
-    boxSizing: 'border-box'
-  },
-  
-  primaryButton: {
-    width: '100%',
-    padding: '12px 20px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease'
-  },
-  
-  userList: {
-    maxHeight: '300px',
-    overflowY: 'auto',
-    border: '1px solid #ecf0f1',
-    borderRadius: '8px',
-    marginTop: '10px'
-  },
-  
-  userListItem: {
-    padding: '12px 15px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-    borderBottom: '1px solid #ecf0f1'
-  },
-  
-  selectedUser: {
-    backgroundColor: '#e3f2fd'
-  }
-};
 
 const ChatApp = () => {
+  const { token } = useParams();
   const [activeTab, setActiveTab] = useState('chats');
   const [selectedChat, setSelectedChat] = useState(null);
   const [message, setMessage] = useState('');
@@ -476,6 +14,9 @@ const ChatApp = () => {
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
   const [currentUser] = useState({
     id: '1',
     name: 'John Doe',
@@ -485,6 +26,30 @@ const ChatApp = () => {
   
   const messagesEndRef = useRef(null);
   
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      // Auto-close sidebar on desktop sizes
+      if (window.innerWidth > 768) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close sidebar when clicking on overlay
+  const handleOverlayClick = () => {
+    setIsSidebarOpen(false);
+  };
+
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   // Mock data
   const [chats] = useState([
     {
@@ -516,6 +81,16 @@ const ChatApp = () => {
       timestamp: '12:15 PM',
       unreadCount: 0,
       isOnline: false
+    },
+    {
+      id: '4',
+      name: 'Sarah Davis',
+      type: 'private',
+      avatar: 'SD',
+      lastMessage: 'See you tomorrow!',
+      timestamp: '11:30 AM',
+      unreadCount: 1,
+      isOnline: true
     }
   ]);
   
@@ -559,7 +134,9 @@ const ChatApp = () => {
     setOnlineUsers([
       { id: '2', name: 'Alice Johnson', avatar: 'AJ' },
       { id: '3', name: 'Bob Wilson', avatar: 'BW' },
-      { id: '4', name: 'Carol Davis', avatar: 'CD' }
+      { id: '4', name: 'Carol Davis', avatar: 'CD' },
+      { id: '5', name: 'David Miller', avatar: 'DM' },
+      { id: '6', name: 'Emma Wilson', avatar: 'EW' }
     ]);
   }, []);
   
@@ -589,6 +166,14 @@ const ChatApp = () => {
       handleSendMessage();
     }
   };
+
+  const handleChatSelect = (chat) => {
+    setSelectedChat(chat);
+    // Close sidebar on mobile when chat is selected
+    if (windowWidth <= 768) {
+      setIsSidebarOpen(false);
+    }
+  };
   
   const renderMessage = (msg) => {
     const isOwnMessage = msg.senderId === currentUser.id;
@@ -596,29 +181,18 @@ const ChatApp = () => {
     return (
       <div
         key={msg.id}
-        style={{
-          ...styles.message,
-          ...(isOwnMessage ? styles.ownMessage : {})
-        }}
+        className={`message ${isOwnMessage ? 'own' : ''}`}
       >
         {!isOwnMessage && (
-          <div style={styles.messageAvatar}>
+          <div className="message-avatar">
             {msg.sender.split(' ').map(n => n[0]).join('')}
           </div>
         )}
-        <div style={styles.messageContent}>
-          <div
-            style={{
-              ...styles.messageBubble,
-              ...(isOwnMessage ? styles.ownMessageBubble : {})
-            }}
-          >
+        <div className="message-content">
+          <div className={`message-bubble ${isOwnMessage ? 'own' : ''}`}>
             {msg.content}
           </div>
-          <div style={{
-            ...styles.messageInfo,
-            ...(isOwnMessage ? { alignSelf: 'flex-end' } : {})
-          }}>
+          <div className={`message-info ${isOwnMessage ? 'own' : ''}`}>
             <span>{msg.timestamp}</span>
             {isOwnMessage && <span>✓✓</span>}
           </div>
@@ -628,38 +202,37 @@ const ChatApp = () => {
   };
   
   const NewChatModal = () => (
-    <div style={styles.modal} onClick={() => setShowNewChatModal(false)}>
-      <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-        <div style={styles.modalHeader}>
-          <h3 style={styles.modalTitle}>Start New Chat</h3>
+    <div className="modal" onClick={() => setShowNewChatModal(false)}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3 className="modal-title">Start New Chat</h3>
           <button
-            style={styles.closeButton}
+            className="close-button"
             onClick={() => setShowNewChatModal(false)}
           >
             <X size={20} />
           </button>
         </div>
         
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Search Users</label>
+        <div className="form-group">
+          <label className="label">Search Users</label>
           <input
-            style={styles.input}
+            className="input"
             type="text"
             placeholder="Enter username or email..."
           />
         </div>
         
-        <div style={styles.userList}>
+        <div className="user-list">
           {onlineUsers.map(user => (
             <div
               key={user.id}
-              style={styles.userListItem}
+              className="user-list-item"
               onClick={() => {
-                // Handle user selection
                 setShowNewChatModal(false);
               }}
             >
-              <div style={{...styles.avatar, width: '32px', height: '32px', fontSize: '12px'}}>
+              <div className="avatar">
                 {user.avatar}
               </div>
               <span>{user.name}</span>
@@ -671,46 +244,46 @@ const ChatApp = () => {
   );
   
   const NewGroupModal = () => (
-    <div style={styles.modal} onClick={() => setShowNewGroupModal(false)}>
-      <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-        <div style={styles.modalHeader}>
-          <h3 style={styles.modalTitle}>Create New Group</h3>
+    <div className="modal" onClick={() => setShowNewGroupModal(false)}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3 className="modal-title">Create New Group</h3>
           <button
-            style={styles.closeButton}
+            className="close-button"
             onClick={() => setShowNewGroupModal(false)}
           >
             <X size={20} />
           </button>
         </div>
         
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Group Name</label>
+        <div className="form-group">
+          <label className="label">Group Name</label>
           <input
-            style={styles.input}
+            className="input"
             type="text"
             placeholder="Enter group name..."
           />
         </div>
         
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Add Members</label>
+        <div className="form-group">
+          <label className="label">Add Members</label>
           <input
-            style={styles.input}
+            className="input"
             type="text"
             placeholder="Search users to add..."
           />
         </div>
         
-        <div style={styles.userList}>
+        <div className="user-list">
           {onlineUsers.map(user => (
             <div
               key={user.id}
-              style={styles.userListItem}
+              className="user-list-item"
               onClick={() => {
                 // Handle user selection for group
               }}
             >
-              <div style={{...styles.avatar, width: '32px', height: '32px', fontSize: '12px'}}>
+              <div className="avatar">
                 {user.avatar}
               </div>
               <span>{user.name}</span>
@@ -718,7 +291,7 @@ const ChatApp = () => {
           ))}
         </div>
         
-        <button style={styles.primaryButton}>
+        <button className="primary-button green">
           Create Group
         </button>
       </div>
@@ -726,58 +299,80 @@ const ChatApp = () => {
   );
   
   return (
-    <div style={styles.chatApp}>
+    <div className="chat-app">
+      {/* Hamburger Menu - Mobile Only */}
+      {windowWidth <= 768 && (
+        <button 
+          className="hamburger-menu"
+          onClick={toggleSidebar}
+        >
+          <Menu size={20} />
+        </button>
+      )}
+
+      {/* Sidebar Overlay - Mobile Only */}
+      {windowWidth <= 768 && (
+        <div 
+          className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`}
+          onClick={handleOverlayClick}
+        />
+      )}
+      
       {/* Sidebar */}
-      <div style={styles.sidebar}>
+      <div className={`sidebar ${windowWidth <= 768 && !isSidebarOpen ? 'mobile-hidden' : ''}`}>
+        {/* Close Button - Mobile Only */}
+        {windowWidth <= 768 && (
+          <button 
+            className="close-sidebar"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <X size={20} />
+          </button>
+        )}
+
         {/* Sidebar Header */}
-        <div style={styles.sidebarHeader}>
-          <div style={styles.userProfile}>
-            <div style={{position: 'relative'}}>
-              <div style={styles.avatar}>
+        <div className="sidebar-header">
+          <div className="user-profile">
+            <div className="avatar-container">
+              <div className="avatar">
                 {currentUser.avatar}
               </div>
-              <div style={styles.statusIndicator}></div>
+              <div className="status-indicator"></div>
             </div>
             <div>
-              <div style={{fontWeight: '600', fontSize: '14px'}}>{currentUser.name}</div>
-              <div style={{fontSize: '12px', color: '#bdc3c7'}}>Online</div>
+              <div className="user-name">{currentUser.name}</div>
+              <div className="user-status">Online</div>
             </div>
           </div>
-          <div style={{display: 'flex', gap: '10px'}}>
-            <button style={styles.actionButton} onClick={() => setShowNewChatModal(true)}>
+          <div className="chat-actions">
+            <button className="action-button" onClick={() => setShowNewChatModal(true)}>
               <UserPlus size={18} />
             </button>
-            <button style={styles.actionButton}>
+            <button className="action-button">
               <Settings size={18} />
             </button>
           </div>
         </div>
         
         {/* Search Bar */}
-        <div style={styles.searchBar}>
+        <div className="search-bar">
           <input
-            style={styles.searchInput}
+            className="search-input"
             type="text"
             placeholder="Search conversations..."
           />
         </div>
         
         {/* Tabs */}
-        <div style={styles.tabContainer}>
+        <div className="tab-container">
           <button
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'chats' ? styles.activeTab : {})
-            }}
+            className={`tab ${activeTab === 'chats' ? 'active' : ''}`}
             onClick={() => setActiveTab('chats')}
           >
             Chats
           </button>
           <button
-            style={{
-              ...styles.tab,
-              ...(activeTab === 'groups' ? styles.activeTab : {})
-            }}
+            className={`tab ${activeTab === 'groups' ? 'active' : ''}`}
             onClick={() => setActiveTab('groups')}
           >
             Groups
@@ -785,35 +380,31 @@ const ChatApp = () => {
         </div>
         
         {/* Chat List */}
-        <div style={styles.chatList}>
+        <div className="chat-list">
           {chats
             .filter(chat => activeTab === 'chats' ? chat.type === 'private' : chat.type === 'group')
             .map(chat => (
               <div
                 key={chat.id}
-                style={{
-                  ...styles.chatItem,
-                  ...(selectedChat?.id === chat.id ? styles.activeChatItem : {}),
-                  ':hover': { backgroundColor: '#34495e' }
-                }}
-                onClick={() => setSelectedChat(chat)}
+                className={`chat-item ${selectedChat?.id === chat.id ? 'active' : ''}`}
+                onClick={() => handleChatSelect(chat)}
               >
-                <div style={{position: 'relative'}}>
-                  <div style={styles.avatar}>
+                <div className="avatar-container">
+                  <div className="avatar">
                     {chat.avatar}
                   </div>
                   {chat.type === 'private' && chat.isOnline && (
-                    <div style={styles.statusIndicator}></div>
+                    <div className="status-indicator"></div>
                   )}
                 </div>
-                <div style={styles.chatItemContent}>
-                  <div style={styles.chatName}>{chat.name}</div>
-                  <div style={styles.lastMessage}>{chat.lastMessage}</div>
+                <div className="chat-item-content">
+                  <div className="chat-name">{chat.name}</div>
+                  <div className="last-message">{chat.lastMessage}</div>
                 </div>
-                <div style={styles.chatMeta}>
-                  <div style={styles.timestamp}>{chat.timestamp}</div>
+                <div className="chat-meta">
+                  <div className="timestamp">{chat.timestamp}</div>
                   {chat.unreadCount > 0 && (
-                    <div style={styles.unreadBadge}>{chat.unreadCount}</div>
+                    <div className="unread-badge">{chat.unreadCount}</div>
                   )}
                 </div>
               </div>
@@ -821,44 +412,37 @@ const ChatApp = () => {
         </div>
         
         {/* Quick Actions */}
-        <div style={{padding: '15px 20px', borderTop: '1px solid #34495e'}}>
+        <div className="quick-actions">
           <button
-            style={{
-              ...styles.primaryButton,
-              backgroundColor: '#3498db',
-              marginBottom: '10px'
-            }}
+            className="primary-button"
             onClick={() => setShowNewChatModal(true)}
           >
-            <UserPlus size={16} style={{marginRight: '8px'}} />
+            <UserPlus size={16} />
             New Chat
           </button>
           <button
-            style={{
-              ...styles.primaryButton,
-              backgroundColor: '#27ae60'
-            }}
+            className="primary-button green"
             onClick={() => setShowNewGroupModal(true)}
           >
-            <Users size={16} style={{marginRight: '8px'}} />
+            <Users size={16} />
             New Group
           </button>
         </div>
       </div>
       
       {/* Main Chat Area */}
-      <div style={styles.mainChat}>
+      <div className="main-chat">
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <div style={styles.chatHeader}>
-              <div style={styles.chatHeaderLeft}>
-                <div style={styles.avatar}>
+            <div className="chat-header">
+              <div className="chat-header-left">
+                <div className="avatar">
                   {selectedChat.avatar}
                 </div>
-                <div style={styles.chatHeaderInfo}>
-                  <h3 style={styles.chatTitle}>{selectedChat.name}</h3>
-                  <div style={styles.chatStatus}>
+                <div className="chat-header-info">
+                  <h3 className="chat-title">{selectedChat.name}</h3>
+                  <div className="chat-status">
                     {selectedChat.type === 'private' 
                       ? (selectedChat.isOnline ? 'Online' : 'Last seen recently')
                       : `${selectedChat.members} members`
@@ -866,55 +450,55 @@ const ChatApp = () => {
                   </div>
                 </div>
               </div>
-              <div style={styles.chatActions}>
-                <button style={styles.actionButton}>
+              <div className="chat-actions">
+                <button className="action-button">
                   <Phone size={18} />
                 </button>
-                <button style={styles.actionButton}>
+                <button className="action-button">
                   <Video size={18} />
                 </button>
-                <button style={styles.actionButton}>
+                <button className="action-button">
                   <Search size={18} />
                 </button>
-                <button style={styles.actionButton}>
+                <button className="action-button">
                   <MoreVertical size={18} />
                 </button>
               </div>
             </div>
             
             {/* Messages */}
-            <div style={styles.messagesContainer}>
+            <div className="messages-container">
               {messages.map(renderMessage)}
               <div ref={messagesEndRef} />
             </div>
             
             {/* Typing Indicator */}
             {isTyping && (
-              <div style={styles.typingIndicator}>
+              <div className="typing-indicator">
                 Alice is typing...
               </div>
             )}
             
             {/* Message Input */}
-            <div style={styles.messageInput}>
-              <button style={styles.actionButton}>
+            <div className="message-input">
+              <button className="action-button">
                 <Paperclip size={18} />
               </button>
-              <div style={styles.inputContainer}>
+              <div className="input-container">
                 <textarea
-                  style={styles.textInput}
+                  className="text-input"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type a message..."
                   rows={1}
                 />
-                <button style={styles.actionButton}>
+                <button className="action-button">
                   <Smile size={18} />
                 </button>
               </div>
               <button
-                style={styles.sendButton}
+                className="send-button"
                 onClick={handleSendMessage}
                 disabled={!message.trim()}
               >
@@ -923,34 +507,26 @@ const ChatApp = () => {
             </div>
           </>
         ) : (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            color: '#7f8c8d',
-            fontSize: '18px'
-          }}>
-            <Users size={64} style={{marginBottom: '20px', opacity: 0.5}} />
+          <div className="empty-state">
+            <Users size={64} />
             <h3>Select a chat to start messaging</h3>
-            <p style={{fontSize: '14px', textAlign: 'center', maxWidth: '300px'}}>
+            <p>
               Choose from your existing conversations or start a new one
             </p>
           </div>
         )}
       </div>
       
-      {/* Online Users Panel */}
-      {selectedChat && (
-        <div style={{...styles.onlineUsers, width: '250px', borderLeft: '1px solid #ecf0f1'}}>
-          <h4 style={{margin: '0 0 15px 0', fontSize: '16px', color: '#2c3e50'}}>
+      {/* Online Users Panel - Hidden on tablets and mobile */}
+      {selectedChat && windowWidth > 1024 && (
+        <div className="online-users">
+          <h4>
             Online Now ({onlineUsers.length})
           </h4>
-          <div style={styles.onlineUsersList}>
+          <div className="online-users-list">
             {onlineUsers.map(user => (
-              <div key={user.id} style={styles.onlineUser}>
-                <div style={{...styles.avatar, width: '24px', height: '24px', fontSize: '10px'}}>
+              <div key={user.id} className="online-user">
+                <div className="avatar">
                   {user.avatar}
                 </div>
                 <span>{user.name}</span>
