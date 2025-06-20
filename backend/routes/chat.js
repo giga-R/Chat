@@ -2,24 +2,32 @@ const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
 
-// Save message
 router.post('/', async (req, res) => {
-  const { senderId, receiverId, content } = req.body;
-  const message = new Message({ senderId, receiverId, content });
-  await message.save();
-  res.status(201).send('Message saved');
+  try {
+    const { senderId, receiverId, content } = req.body;
+    const newMsg = new Message({ senderId, receiverId, content });
+    await newMsg.save();
+    res.status(201).json(newMsg);
+  } catch (err) {
+    res.status(500).json({ error: 'Message save failed' });
+  }
 });
 
-// Get messages between two users
+// Fetch messages between two users
 router.get('/:user1/:user2', async (req, res) => {
-  const { user1, user2 } = req.params;
-  const messages = await Message.find({
-    $or: [
-      { senderId: user1, receiverId: user2 },
-      { senderId: user2, receiverId: user1 }
-    ]
-  }).sort('timestamp');
-  res.json(messages);
+  try {
+    const { user1, user2 } = req.params;
+    const msgs = await Message.find({
+      $or: [
+        { senderId: user1, receiverId: user2 },
+        { senderId: user2, receiverId: user1 }
+      ]
+    }).sort({ timestamp: 1 });
+
+    res.json(msgs);
+  } catch (err) {
+    res.status(500).json({ error: 'Message fetch failed' });
+  }
 });
 
 module.exports = router;
